@@ -5,93 +5,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso - Ferretería</title>
     <style>
-    body {
-    font-family: 'segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #0b0f19;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    color: #f3f4f6;
-}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0b0f19;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #f3f4f6;
+        }
 
-.login-card {
-    background-color: #111827;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.03);
-    width: 100%;
-    max-width: 400px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
+        .login-card {
+            background-color: #111827;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            width: 100%;
+            max-width: 400px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
-.login-card h2 {
-    margin-bottom: 20px;
-    color: #f8fafc;
-    text-align: center;
-    font-size: 1.5rem;
-    background: linear-gradient(135deg, #38bdf8, #818cf8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
+        .login-card h2 {
+            margin-bottom: 20px;
+            color: #f8fafc;
+            text-align: center;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-.form-group {
-    margin-bottom: 15px;
-}
+        .form-group {
+            margin-bottom: 15px;
+        }
 
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: #94a3b8;
-    font-weight: 500;
-    font-size: 0.9rem;
-}
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #94a3b8;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
 
-.form-group input {
-    width: 100%;
-    padding: 10px 12px;
-    background-color: #0f172a;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    box-sizing: border-box;
-    color: #f3f4f6;
-    font-size: 0.95rem;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            box-sizing: border-box;
+            color: #f3f4f6;
+            font-size: 0.95rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
 
-.form-group input:focus {
-    outline: none;
-    border-color: #38bdf8;
-    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-}
+        .form-group input:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
 
-.btn-action {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, #2563eb, #38bdf8);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-}
+        /* Contenedor relativo para el input de contraseña y el botón del icono */
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
 
-.btn-action:hover {
-    background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
-    box-shadow: 0 6px 16px rgba(56, 189, 248, 0.4);
-    transform: translateY(-1px);
-}
+        .password-container input {
+            padding-right: 40px; /* Espacio para que el texto no quede debajo del icono */
+        }
 
-.msg {
-    text-align: center;
-    margin-top: 15px;
-    font-size: 0.9rem;
-    color: #94a3b8;
-}
+        .btn-toggle-password {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: color 0.2s ease;
+        }
+
+        .btn-toggle-password:hover {
+            color: #38bdf8;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #2563eb, #38bdf8);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-action:hover {
+            background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+            box-shadow: 0 6px 16px rgba(56, 189, 248, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .msg {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
         #error-msg { color: #dc2626; }
     </style>
 </head>
@@ -106,10 +136,27 @@
                     <label for="login-email">Correo Electrónico</label>
                     <input type="email" id="login-email" required placeholder="admin@ferreteria.com">
                 </div>
+                
                 <div class="form-group">
                     <label for="login-contrasena">Contraseña</label>
-                    <input type="password" id="login-contrasena" required placeholder="********">
+                    <!-- Contenedor con posición relativa para alinear el botón del vector -->
+                    <div class="password-container">
+                        <input type="password" id="login-contrasena" required placeholder="********">
+                        <button type="button" id="btn-toggle-password" class="btn-toggle-password" title="Mostrar/Ocultar contraseña">
+                            <!-- Icono de Ojo Abierto (Neutro/Moderno) -->
+                            <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <!-- Icono de Ojo Tachado (Oculto) -->
+                            <svg id="icon-eye-off" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
+
                 <button type="submit" class="btn-action">Ingresar</button>
                 <p id="error-msg" class="msg"></p>
             </form>
@@ -117,6 +164,26 @@
     </div>
 
     <script>
+        // Lógica para alternar la visibilidad de la contraseña y cambiar entre los iconos SVG
+        const btnTogglePassword = document.getElementById('btn-toggle-password');
+        const inputContrasena = document.getElementById('login-contrasena');
+        const iconEye = document.getElementById('icon-eye');
+        const iconEyeOff = document.getElementById('icon-eye-off');
+
+        if (btnTogglePassword && inputContrasena) {
+            btnTogglePassword.addEventListener('click', () => {
+                if (inputContrasena.type === 'password') {
+                    inputContrasena.type = 'text';
+                    iconEye.style.display = 'none';
+                    iconEyeOff.style.display = 'block';
+                } else {
+                    inputContrasena.type = 'password';
+                    iconEye.style.display = 'block';
+                    iconEyeOff.style.display = 'none';
+                }
+            });
+        }
+
         // Lógica de Inicio de Sesión
         const formLogin = document.getElementById('form-login');
         const errorMsg = document.getElementById('error-msg');
@@ -127,7 +194,7 @@
             
             const credentials = {
                 email: document.getElementById('login-email').value,
-                contrasena: document.getElementById('login-contrasena').value
+                contrasena: inputContrasena.value
             };
 
             fetch('https://localhost:7137/api/Usuarios/Login', {
@@ -153,9 +220,6 @@
             });
         });
     </script>
-  
-    </script>
-    
 
 </body>
 </html>

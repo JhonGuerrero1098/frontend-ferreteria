@@ -1190,20 +1190,38 @@ case 'pos':
     }, 100);
     break;
 
-             case 'ventas-dia':
+          case 'ventas-dia':
     sectionTitle.textContent = 'Ventas del Día';
     contentBody.innerHTML = `
-        <div class="card" style="margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="color: #f8fafc; margin: 0;">Total ventas del dia.</h3>
-                <div style="background-color: #0f172a; padding: 12px 18px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.2);">
-                    <span style="font-weight: 600; color: #94a3b8; font-size: 0.9rem;">Total Vendido Hoy: <span id="total-ventas-dia" style="color: #38bdf8; font-size: 1.1rem; font-weight: bold;">0.00</span></span>
-                </div>
+
+      <!-- Tarjeta del Gran Total Global -->
+        <div class="card" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #0f172a, #1e293b);">
+            <h3 style="color: #f8fafc; margin: 0; font-size: 1.1rem;"> Ventas del Día</h3>
+            <span id="total-ventas-dia" style="color: #38bdf8; font-size: 1.4rem; font-weight: bold;">$0.00</span>
+        </div>
+
+        <!-- Tarjetas de resumen desglosadas por método de pago -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+            <div class="card" style="margin-bottom: 0; padding: 15px; border-left: 4px solid #38bdf8;">
+                <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 500;">Total Efectivo</span>
+                <div id="total-efectivo" style="font-size: 1.3rem; font-weight: bold; color: #f8fafc; margin-top: 5px;">$0.00</div>
+            </div>
+            <div class="card" style="margin-bottom: 0; padding: 15px; border-left: 4px solid #a855f7;">
+                <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 500;">Total Transferencia</span>
+                <div id="total-transferencia" style="font-size: 1.3rem; font-weight: bold; color: #f8fafc; margin-top: 5px;">$0.00</div>
+            </div>
+            <div class="card" style="margin-bottom: 0; padding: 15px; border-left: 4px solid #34d399;">
+                <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 500;">Total Datáfono</span>
+                <div id="total-datafono" style="font-size: 1.3rem; font-weight: bold; color: #f8fafc; margin-top: 5px;">$0.00</div>
             </div>
         </div>
+
+      
+
+        <!-- Contenedor de listas desplegables por Método de Pago -->
         <div class="card">
-            <h3 style="color: #f8fafc; margin-bottom: 10px;">Detalle de Facturas (Haga clic en "Ver Detalle" para desplegar)</h3>
-            <div id="contenedor-tabla-ventas">
+            <h3 style="color: #f8fafc; margin-bottom: 15px;">Desglose de Facturas por Método de Pago</h3>
+            <div id="contenedor-desglose-metodos">
                 <p style="padding: 15px; color: #94a3b8; text-align: center;">Cargando ventas del día...</p>
             </div>
         </div>
@@ -1215,37 +1233,38 @@ case 'pos':
         fetch(`https://localhost:7137/api/Ventas/PorFecha?fecha=${fechaLocal}`)
             .then(res => res.json())
             .then(ventas => {
-                const contenedor = document.getElementById('contenedor-tabla-ventas');
+                const contenedor = document.getElementById('contenedor-desglose-metodos');
                 const spanTotalDia = document.getElementById('total-ventas-dia');
+                const spanEfectivo = document.getElementById('total-efectivo');
+                const spanTransferencia = document.getElementById('total-transferencia');
+                const spanDatafono = document.getElementById('total-datafono');
 
                 if (!ventas || ventas.length === 0) {
                     contenedor.innerHTML = '<p style="padding: 15px; text-align: center; color: #94a3b8;">No se han registrado ventas el día de hoy.</p>';
-                    spanTotalDia.textContent = '0.00';
+                    spanTotalDia.textContent = '$0.00';
+                    spanEfectivo.textContent = '$0.00';
+                    spanTransferencia.textContent = '$0.00';
+                    spanDatafono.textContent = '$0.00';
                     return;
                 }
 
-                let tablaHTML = `
-                    <div style="overflow-x: auto;">
-                        <table style="width:100%; border-collapse: collapse; margin-top:5px; text-align: left; color: #f3f4f6;">
-                            <thead>
-                                <tr style="background-color:#020617; color: #38bdf8; border-bottom: 2px solid rgba(56, 189, 248, 0.2);">
-                                    <th style="padding: 12px;">ID Venta</th>
-                                    <th style="padding: 12px;">Hora</th>
-                                    <th style="padding: 12px;">Cliente</th>
-                                    <th style="padding: 12px;">Método Pago</th>
-                                    <th style="padding: 12px; text-align: right;">Total</th>
-                                    <th style="padding: 12px; text-align: center;">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
+                // Clasificamos y calculamos totales por método de pago
+                let grupos = {
+                    'Efectivo': [],
+                    'Transferencia': [],
+                    'Datáfono': []
+                };
 
-                let acumuladoTotal = 0;
+                let totalesGrupo = {
+                    'Efectivo': 0,
+                    'Transferencia': 0,
+                    'Datáfono': 0
+                };
+
+                let granTotalGlobal = 0;
 
                 ventas.forEach(venta => {
                     const hora = venta.fecha ? venta.fecha.split('T')[1].substring(0, 5) : 'N/A';
-                    const nombreCliente = venta.idClienteNavigation ? venta.idClienteNavigation.nombre : 'Cliente General';
-                    const metodoPagoVenta = venta.metodoPago || 'Efectivo';
                     
                     let totalVenta = 0;
                     let listaProductosHTML = '<ul style="margin: 0; padding-left: 20px; color: #94a3b8;">';
@@ -1260,36 +1279,122 @@ case 'pos':
                     }
                     listaProductosHTML += '</ul>';
 
-                    acumuladoTotal += totalVenta;
+                    // Normalización robusta del método de pago
+                    let metodoOriginal = venta.metodoPago ? venta.metodoPago.trim().toLowerCase() : 'efectivo';
+                    let metodo = 'Efectivo';
 
-                    tablaHTML += `
-                        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.2s;">
-                            <td style="padding: 12px; color: #94a3b8;">#${venta.id}</td>
-                            <td style="padding: 12px;">${hora}</td>
-                            <td style="padding: 12px; font-weight: 500;">${nombreCliente}</td>
-                            <td style="padding: 12px;"><span style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; border: 1px solid rgba(56, 189, 248, 0.2);">${metodoPagoVenta}</span></td>
-                            <td style="padding: 12px; text-align: right; font-weight: bold; color: #34d399;">$${totalVenta.toFixed(2)}</td>
-                            <td style="padding: 12px; text-align: center;">
-                                <button class="btn-desplegar" data-id="${venta.id}" style="background-color: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Ver Detalle ▼</button>
-                            </td>
-                        </tr>
-                        <tr id="detalle-${venta.id}" style="display: none; background-color: #0f172a; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-                            <td colspan="6" style="padding: 15px 20px;">
-                                <div style="font-weight: 600; margin-bottom: 8px; color: #38bdf8;">Productos de la Factura #${venta.id}:</div>
-                                ${listaProductosHTML}
-                            </td>
-                        </tr>
+                    if (metodoOriginal.includes('transf') || metodoOriginal.includes('nequi') || metodoOriginal.includes('daviplata')) {
+                        metodo = 'Transferencia';
+                    } else if (metodoOriginal.includes('data') || metodoOriginal.includes('tarj') || metodoOriginal.includes('pos') || metodoOriginal.includes('datáfo')) {
+                        metodo = 'Datáfono';
+                    } else if (metodoOriginal.includes('efect') || metodoOriginal.includes('cash')) {
+                        metodo = 'Efectivo';
+                    } else {
+                        metodo = 'Efectivo';
+                    }
+
+                    if (!grupos[metodo]) {
+                        grupos[metodo] = [];
+                        totalesGrupo[metodo] = 0;
+                    }
+
+                    grupos[metodo].push({
+                        id: venta.id,
+                        hora: hora,
+                        total: totalVenta,
+                        productosHTML: listaProductosHTML
+                    });
+
+                    totalesGrupo[metodo] += totalVenta;
+                    granTotalGlobal += totalVenta;
+                });
+
+                // Actualizamos las tarjetas superiores
+                spanEfectivo.textContent = `$${totalesGrupo['Efectivo'].toFixed(2)}`;
+                spanTransferencia.textContent = `$${totalesGrupo['Transferencia'].toFixed(2)}`;
+                spanDatafono.textContent = `$${totalesGrupo['Datáfono'].toFixed(2)}`;
+                spanTotalDia.textContent = `$${granTotalGlobal.toFixed(2)}`;
+
+                // Construimos las listas desplegables principales por método de pago
+                let htmlDesglose = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+
+                const metodosKeys = Object.keys(grupos);
+                metodosKeys.forEach(metodo => {
+                    const listaVentas = grupos[metodo];
+                    const subtotalMetodo = totalesGrupo[metodo];
+                    
+                    let colorBorde = '#38bdf8';
+                    if (metodo === 'Transferencia') colorBorde = '#a855f7';
+                    if (metodo === 'Datáfono') colorBorde = '#34d399';
+
+                    htmlDesglose += `
+                        <details style="background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden; border-left: 4px solid ${colorBorde};">
+                            <summary style="padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: #f8fafc; user-select: none; background: rgba(255,255,255,0.02);">
+                                <span>${metodo} <span style="font-size: 0.85rem; color: #94a3b8; font-weight: normal; margin-left: 8px;">(${listaVentas.length} transacciones)</span></span>
+                                <span style="color: ${colorBorde}; font-size: 1.05rem;">$${subtotalMetodo.toFixed(2)} ▼</span>
+                            </summary>
+                            <div style="padding: 15px 20px; border-top: 1px solid rgba(255,255,255,0.05); background: #0b0f19;">
+                    `;
+
+                    if (listaVentas.length === 0) {
+                        htmlDesglose += `<p style="color: #94a3b8; font-size: 0.9rem; margin: 0; text-align: center;">No hay ventas registradas con este método.</p>`;
+                    } else {
+                        htmlDesglose += `
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                                <thead>
+                                    <tr style="color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                        <th style="padding: 8px;">Factura ID</th>
+                                        <th style="padding: 8px;">Hora</th>
+                                        <th style="padding: 8px; text-align: right;">Valor</th>
+                                        <th style="padding: 8px; text-align: center;">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+
+                        listaVentas.forEach(item => {
+                            htmlDesglose += `
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td style="padding: 10px 8px; color: #94a3b8;">#${item.id}</td>
+                                    <td style="padding: 10px 8px; color: #f3f4f6;">${item.hora}</td>
+                                    <td style="padding: 10px 8px; text-align: right; font-weight: 600; color: #34d399;">$${item.total.toFixed(2)}</td>
+                                    <td style="padding: 10px 8px; text-align: center;">
+                                        <button class="btn-desplegar-detalle" data-id="${item.id}" style="background-color: #2563eb; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Ver Detalle ▼</button>
+                                    </td>
+                                </tr>
+                                <tr id="detalle-factura-${item.id}" style="display: none; background-color: #0f172a; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td colspan="4" style="padding: 12px 15px;">
+                                        <div style="font-weight: 600; margin-bottom: 6px; color: #38bdf8; font-size: 0.85rem;">Productos de la Factura #${item.id}:</div>
+                                        ${item.productosHTML}
+                                    </td>
+                                </tr>
+                            `;
+                        });
+
+                        htmlDesglose += `
+                                </tbody>
+                            </table>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); font-weight: bold;">
+                                <span style="color: #94a3b8; font-size: 0.9rem;">Subtotal ${metodo}:</span>
+                                <span style="color: ${colorBorde};">$${subtotalMetodo.toFixed(2)}</span>
+                            </div>
+                        `;
+                    }
+
+                    htmlDesglose += `
+                            </div>
+                        </details>
                     `;
                 });
 
-                tablaHTML += `</tbody></table></div>`;
-                contenedor.innerHTML = tablaHTML;
-                spanTotalDia.textContent = acumuladoTotal.toFixed(2);
+                htmlDesglose += `</div>`;
+                contenedor.innerHTML = htmlDesglose;
 
-                document.querySelectorAll('.btn-desplegar').forEach(btn => {
+                // Listener independiente para desplegar el detalle de cada factura individual
+                document.querySelectorAll('.btn-desplegar-detalle').forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        const ventaId = e.target.getAttribute('data-id');
-                        const filaDetalle = document.getElementById(`detalle-${ventaId}`);
+                        const facturaId = e.target.getAttribute('data-id');
+                        const filaDetalle = document.getElementById(`detalle-factura-${facturaId}`);
 
                         if (filaDetalle.style.display === 'none') {
                             filaDetalle.style.display = 'table-row';
@@ -1302,17 +1407,18 @@ case 'pos':
                         }
                     });
                 });
+
             })
             .catch(err => {
                 console.error('Error al cargar ventas:', err);
-                document.getElementById('contenedor-tabla-ventas').innerHTML = '<p style="padding: 15px; color: #f87171; text-align: center;">Error al cargar el reporte de ventas.</p>';
+                document.getElementById('contenedor-desglose-metodos').innerHTML = '<p style="padding: 15px; color: #f87171; text-align: center;">Error al cargar el reporte de ventas.</p>';
             });
     }
 
     cargarVentasDelDia();
     break;
 
-               case 'producto-mas-vendido':
+             case 'producto-mas-vendido':
     sectionTitle.textContent = 'Producto Más Vendido';
     contentBody.innerHTML = `
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
@@ -1333,8 +1439,17 @@ case 'pos':
                 </div>
             </div>
         </div>
+
+        <!-- Nueva Sección: Top 5 Productos más vendidos del día en barras -->
+        <div class="card">
+            <h3 style="color: #f8fafc; margin-bottom: 15px;">📊 Top 5 Productos Más Vendidos del Día</h3>
+            <div id="contenedor-top5-diario">
+                <p style="color: #94a3b8; text-align: center; padding: 15px;">Cargando gráfico de barras...</p>
+            </div>
+        </div>
     `;
 
+    // 1. Producto Estrella General (Histórico)
     fetch('https://localhost:7137/api/Ventas/ProductoMasVendido')
         .then(res => res.json())
         .then(data => {
@@ -1356,12 +1471,14 @@ case 'pos':
             document.getElementById('contenedor-producto-general').innerHTML = '<p style="color: #f87171; text-align: center; padding: 15px;">Sin datos suficientes.</p>';
         });
 
+    // 2. Producto Estrella Diario y Top 5 por fecha
     function cargarEstrellaDiario(fechaStr = '') {
         let url = 'https://localhost:7137/api/Ventas/ProductoMasVendidoDiario';
         if (fechaStr) {
             url += `?fecha=${fechaStr}`;
         }
 
+        // Cargar el producto número 1 del día
         fetch(url)
             .then(res => {
                 if (!res.ok) throw new Error('Sin ventas');
@@ -1381,6 +1498,75 @@ case 'pos':
             .catch(() => {
                 document.getElementById('contenedor-producto-diario').innerHTML = '<p style="color: #fbbf24; font-size: 0.9rem; text-align: center; padding: 15px;">No hay ventas registradas en esta fecha.</p>';
             });
+
+        // Cargar el Top 5 de productos del día en formato de barras
+        let urlTop5 = 'https://localhost:7137/api/Ventas/TopProductosDiario'; // (O ajusta la ruta si tu endpoint del top 5 diario tiene otro nombre en C#)
+        if (fechaStr) {
+            urlTop5 += `?fecha=${fechaStr}`;
+        }
+
+        // Nota: Si tu backend usa el endpoint general de ventas por fecha para calcular el top 5 en el cliente, 
+        // aquí lo calculamos directamente de forma limpia consumiendo las ventas de ese día:
+        fetch(`https://localhost:7137/api/Ventas/PorFecha?fecha=${fechaStr}`)
+            .then(res => res.json())
+            .then(ventas => {
+                const contenedorTop5 = document.getElementById('contenedor-top5-diario');
+
+                if (!ventas || ventas.length === 0) {
+                    contenedorTop5.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 15px;">No hay datos de ventas para graficar el Top 5 en esta fecha.</p>';
+                    return;
+                }
+
+                // Agrupamos unidades vendidas por producto
+                let productosMap = {};
+                ventas.forEach(v => {
+                    if (v.detalleVenta) {
+                        v.detalleVenta.forEach(det => {
+                            const nombreProd = det.idProductoNavigation ? det.idProductoNavigation.nombre : `Producto #${det.idProducto}`;
+                            if (!productosMap[nombreProd]) {
+                                productosMap[nombreProd] = 0;
+                            }
+                            productosMap[nombreProd] += det.cantidad;
+                        });
+                    }
+                });
+
+                // Convertimos a array y ordenamos de mayor a menor, tomando el Top 5
+                let arrayProductos = Object.keys(productosMap).map(nombre => ({
+                    nombre: nombre,
+                    cantidad: productosMap[nombre]
+                })).sort((a, b) => b.cantidad - a.cantidad).slice(0, 5);
+
+                if (arrayProductos.length === 0) {
+                    contenedorTop5.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 15px;">Sin productos vendidos hoy.</p>';
+                    return;
+                }
+
+                const maxUnidades = arrayProductos[0].cantidad || 1; // Para calcular el porcentaje de la barra
+
+                let barrasHTML = '<div style="display: flex; flex-direction: column; gap: 14px;">';
+                arrayProductos.forEach((p, index) => {
+                    const porcentaje = Math.round((p.cantidad / maxUnidades) * 100);
+                    
+                    barrasHTML += `
+                        <div style="background: #0f172a; padding: 12px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.95rem;">
+                                <span style="font-weight: 600; color: #f8fafc;"><span style="color: #38bdf8; margin-right: 6px;">#${index + 1}</span> ${p.nombre}</span>
+                                <span style="font-weight: bold; color: #34d399;">${p.cantidad} unidades</span>
+                            </div>
+                            <div style="width: 100%; background: #1e293b; border-radius: 4px; height: 10px; overflow: hidden;">
+                                <div style="width: ${porcentaje}%; background: linear-gradient(90deg, #2563eb, #38bdf8); height: 100%; border-radius: 4px; transition: width 0.4s ease;"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+                barrasHTML += '</div>';
+
+                contenedorTop5.innerHTML = barrasHTML;
+            })
+            .catch(() => {
+                document.getElementById('contenedor-top5-diario').innerHTML = '<p style="color: #f87171; text-align: center; padding: 15px;">Error al calcular el Top 5 de productos.</p>';
+            });
     }
 
     setTimeout(() => {
@@ -1394,10 +1580,6 @@ case 'pos':
             cargarEstrellaDiario(inputFecha.value);
         });
     }, 100);
-    break;
-
-default:
-    sectionTitle.textContent = 'Dashboard';
     break;
             }
         });
